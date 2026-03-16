@@ -1,0 +1,18 @@
+packages:
+  "framer-motion": "For high-quality page transitions, scroll animations, and cinematic UI effects"
+  "react-hook-form": "For robust admin forms with validation"
+  "@hookform/resolvers": "For Zod schema validation in forms"
+  "clsx": "For conditional class name joining (often used with tailwind-merge)"
+  "tailwind-merge": "For merging tailwind classes without conflicts"
+
+images:
+  - path: "artifacts/portfolio/public/images/hero-abstract.png"
+    description: "Ultra modern dark abstract background with glowing electric blue and purple neon particles and volumetric 3D shapes, cinematic lighting, very dark and moody"
+    aspect_ratio: "16:9"
+  - path: "artifacts/portfolio/public/images/avatar-placeholder.png"
+    description: "A stylized modern silhouette avatar of a male software developer in dark cyberpunk aesthetic with neon blue lighting accents, highly professional but edgy"
+    aspect_ratio: "1:1"
+
+notes:
+  - Using generated orval hooks from @workspace/api-client-react
+  - Auth token must be manually attached to requests via the hook options
