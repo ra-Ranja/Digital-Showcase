@@ -6,6 +6,7 @@ import { type Project } from "@workspace/api-client-react";
 
 export function ProjectCard({ project, index }: { project: Project; index: number }) {
   const accentColor = project.color || "#06b6d4";
+  const img = (project as any).coverImageBase64 || project.coverImage;
 
   return (
     <motion.div
@@ -14,22 +15,48 @@ export function ProjectCard({ project, index }: { project: Project; index: numbe
       viewport={{ once: true, margin: "-50px" }}
       transition={{ duration: 0.5, delay: index * 0.1 }}
     >
-      <Link 
+      <Link
         href={`/projects/${project.id}`}
         className="group block relative rounded-2xl overflow-hidden glass-card h-full flex flex-col transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl"
-        style={{ 
-          boxShadow: `0 0 0 1px rgba(255,255,255,0.05), 0 10px 40px -10px ${accentColor}15` 
+        style={{
+          boxShadow: `0 0 0 1px rgba(255,255,255,0.05), 0 10px 40px -10px ${accentColor}15`
         }}
       >
         {/* Glow effect on hover */}
-        <div 
+        <div
           className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
           style={{ background: `radial-gradient(circle at 50% 0%, ${accentColor}20 0%, transparent 70%)` }}
         />
 
-        <div className="p-6 md:p-8 flex-1 flex flex-col z-10">
+        {/* ── Image en haut ── */}
+        <div className="relative w-full h-72 overflow-hidden shrink-0">
+          {img ? (
+            <img
+              src={img}
+              alt={project.title}
+              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+            />
+          ) : (
+            <div
+              className="w-full h-full"
+              style={{ background: `linear-gradient(135deg, ${accentColor}25, ${accentColor}08, #000)` }}
+            >
+              <svg className="w-full h-full opacity-10" viewBox="0 0 400 180">
+                {Array.from({ length: 5 }, (_, i) => (
+                  <circle key={i} cx={60 + i * 70} cy={90} r={20 + i * 18}
+                    fill="none" stroke={accentColor} strokeWidth="0.5" />
+                ))}
+              </svg>
+            </div>
+          )}
+          {/* Dégradé bas de l'image vers la card */}
+          <div className="absolute bottom-0 left-0 right-0 h-10 bg-linear-to-t from-card to-transparent" />
+        </div>
+
+        {/* ── Contenu existant inchangé ── */}
+        <div className="p-3 md:p-4 flex-1 flex flex-col z-10">
           <div className="flex justify-between items-start mb-6">
-            <div 
+            <div
               className="w-12 h-12 rounded-xl flex items-center justify-center bg-background border border-white/10"
               style={{ color: accentColor }}
             >
@@ -43,15 +70,15 @@ export function ProjectCard({ project, index }: { project: Project; index: numbe
           <h3 className="text-2xl font-display font-bold text-white mb-3 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-white/70 transition-all">
             {project.title}
           </h3>
-          
+
           <p className="text-muted-foreground mb-6 flex-1 line-clamp-3 leading-relaxed">
             {project.description}
           </p>
 
           <div className="flex flex-wrap gap-2 mt-auto">
             {project.technologies?.slice(0, 4).map((tech) => (
-              <span 
-                key={tech} 
+              <span
+                key={tech}
                 className="text-xs font-medium px-3 py-1 rounded-full bg-white/5 border border-white/10 text-white/80"
               >
                 {tech}

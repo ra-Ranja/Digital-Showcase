@@ -1,167 +1,410 @@
-import React from "react";
-import { Link } from "wouter";
-import { motion } from "framer-motion";
-import { ArrowRight, Terminal, Code2, Database } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useProjectsList } from "@/hooks/use-portfolio-api";
-import { ProjectCard } from "@/components/ui/ProjectCard";
+import { CTASocials } from "@/components/ui/CTASocials";
+import About from "./About";
+import Projects from "./Projects";
 
+// ── Types ──────────────────────────────────────────────
+interface Palette {
+  bg: string;
+  accent: string;
+  accentSecondary: string;
+  word: string;
+}
+
+interface Project {
+  id: string | number;
+  featured?: boolean;
+  [key: string]: unknown;
+}
+
+// ── Palettes ───────────────────────────────────────────
+const PALETTES: Palette[] = [
+  { bg: "#0a0a0f",  accent: "#6366f1", accentSecondary: "#a855f7", word: ""    },
+  { bg: "#0a0f0a",  accent: "#10b981", accentSecondary: "#06b6d4", word: "BATIR"  },
+  { bg: "#0f0a0a",  accent: "#f97316", accentSecondary: "#ef4444", word: "CODER"   },
+  { bg: "#0f0a0f",  accent: "#e879f9", accentSecondary: "#818cf8", word: "CREER" },
+];
+
+const PHOTOS = ["/images/Photo1.png", "/images/Photo2.png"];
+
+// ── Composant ──────────────────────────────────────────
 export default function Home() {
+  const [paletteIndex, setPaletteIndex] = useState(0);
+  const [photoIndex, setPhotoIndex] = useState(0);
+  const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
+  const palette: Palette = PALETTES[paletteIndex];
+
+  // Auto-changement de palette toutes les 3 secondes
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setPaletteIndex((prev) => (prev + 1) % PALETTES.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Auto-changement de photo toutes les 6 secondes
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setPhotoIndex((prev) => (prev + 1) % PHOTOS.length);
+    }, 6000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Suivi de souris pour l'aurora
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePos({
+        x: (e.clientX / window.innerWidth) * 100,
+        y: (e.clientY / window.innerHeight) * 100,
+      });
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, []);
+
   const { data: projects, isLoading } = useProjectsList();
-  const featuredProjects = projects?.filter(p => p.featured).slice(0, 4) || projects?.slice(0, 4);
+  const projectsArray: Project[] = Array.isArray(projects)
+    ? projects.map((p) => ({
+        ...p,
+      }))
+    : [];
+  const featuredProjects =
+    projectsArray.filter((p) => p.featured).slice(0, 4).length > 0
+      ? projectsArray.filter((p) => p.featured).slice(0, 4)
+      : projectsArray.slice(0, 4);
 
   return (
     <div className="flex flex-col w-full">
-      {/* Hero Section */}
-      <section className="relative min-h-[90vh] flex items-center justify-center pt-20 overflow-hidden">
-        {/* Abstract Background Elements */}
-        <div className="absolute inset-0 z-0">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-[120px] mix-blend-screen animate-pulse" />
-          <div className="absolute bottom-1/4 right-1/4 w-[30rem] h-[30rem] bg-accent/20 rounded-full blur-[150px] mix-blend-screen" style={{ animation: "pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite" }} />
-          <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=1920&q=80')] opacity-5 bg-cover bg-center mix-blend-overlay" />
-          {/* Using requested generated image if available */}
-          <div 
-            className="absolute inset-0 bg-cover bg-center opacity-20 mix-blend-screen" 
-            style={{ backgroundImage: `url(${import.meta.env.BASE_URL}images/hero-abstract.png)` }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-background/10 via-background/50 to-background" />
-        </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
-          <div className="max-w-4xl">
+      {/* ═══════════════════════════════════════
+          HERO
+      ═══════════════════════════════════════ */}
+
+      {/* Fond avec fondu de couleur — séparé pour transition propre */}
+      <div className="relative">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={palette.bg}
+            className="absolute inset-0 min-h-screen"
+            style={{ backgroundColor: palette.bg, zIndex: 0 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1.2, ease: "easeInOut" }}
+          />
+        </AnimatePresence>
+
+        <section className="relative min-h-screen flex items-center overflow-hidden" id="hero">
+
+          {/* ── Aurora (suit la souris) ── */}
+          <div className="absolute inset-0 z-0 overflow-hidden">
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              className="absolute w-[60vw] h-[60vw] rounded-full blur-[120px] opacity-25"
+              animate={{
+                left: `${mousePos.x - 30}%`,
+                top: `${mousePos.y - 30}%`,
+                background: `radial-gradient(circle, ${palette.accent}, transparent 70%)`,
+              }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              style={{ position: "absolute" }}
+            />
+            <motion.div
+              className="absolute w-[35vw] h-[35vw] rounded-full blur-[100px] opacity-15"
+              animate={{
+                background: `radial-gradient(circle, ${palette.accentSecondary}, transparent 70%)`,
+              }}
+              transition={{ duration: 1.2 }}
+              style={{ right: "5%", bottom: "10%" }}
+            />
+            {/* Grille de points */}
+            <div
+              className="absolute inset-0 opacity-[0.04]"
+              style={{
+                backgroundImage: `radial-gradient(circle, white 1px, transparent 1px)`,
+                backgroundSize: "40px 40px",
+              }}
+            />
+          </div>
+
+          {/* ── MOT GÉANT EN FOND ── */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-0">
+            <AnimatePresence mode="wait">
+              <motion.span
+                key={palette.word}
+                className="font-black"
+                style={{
+                  fontSize: "clamp(10rem, 28vw, 26rem)",
+                  color: "rgba(255,255,255,0.04)",
+                  lineHeight: 1,
+                  letterSpacing: "-0.05em",
+                }}
+                initial={{ opacity: 0, scale: 0.85 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 1.1 }}
+                transition={{ duration: 0.8 }}
+              >
+                {palette.word}
+              </motion.span>
+            </AnimatePresence>
+          </div>
+
+          {/* ── CONTENU PRINCIPAL ── */}
+          <div className="relative z-10 max-w-7xl mx-auto px-6 sm:px-8 w-full min-h-screen flex flex-col justify-between pt-24 pb-12">
+
+            {/* Switcher palette + tag top */}
+            <motion.div
+              className="flex items-center justify-between"
+              initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-panel mb-8"
             >
-              <span className="w-2 h-2 rounded-full bg-primary animate-ping" />
-              <span className="text-sm font-medium tracking-wide">Disponible pour de nouvelles opportunités</span>
+              {/* Pills de thème cliquables */}
+              <div className="flex items-center gap-2">
+                {PALETTES.map((p, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => setPaletteIndex(i)}
+                    aria-label={`Thème ${i + 1}`}
+                    className="transition-all duration-500"
+                    style={{
+                      width: i === paletteIndex ? "28px" : "8px",
+                      height: "8px",
+                      borderRadius: "4px",
+                      backgroundColor: i === paletteIndex
+                        ? p.accent
+                        : "rgba(255,255,255,0.2)",
+                    }}
+                  />
+                ))}
+              </div>
             </motion.div>
 
-            <motion.h1 
-              className="text-5xl sm:text-7xl md:text-8xl font-display font-bold leading-[1.1] tracking-tighter mb-6"
-              initial={{ opacity: 0, y: 40 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.1 }}
-            >
-              Bonjour, je suis <br />
-              <span className="gradient-text">Ranja Andriamiadana.</span>
-            </motion.h1>
+            {/* ── GRILLE PRINCIPALE : texte gauche / photo droite ── */}
+            <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-12 flex-1 justify-end pb-4">
 
-            <motion.p 
-              className="text-xl sm:text-2xl text-muted-foreground md:max-w-2xl leading-relaxed mb-10"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-            >
-              Développeur Junior en <span className="text-white font-medium">Génie Logiciel</span>. 
-              Je conçois et développe des expériences web et logicielles modernes, performantes et esthétiques.
-            </motion.p>
+              {/* ── GAUCHE : texte ── */}
+              <div className="flex flex-col justify-end max-w-2xl">
 
-            <motion.div 
-              className="flex flex-col sm:flex-row gap-4"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.5 }}
+                {/* Hello World */}
+                <div className="overflow-hidden mb-1">
+                  <motion.h2
+                    className="font-black text-white leading-none"
+                    style={{
+                      fontSize: "clamp(2rem, 5.5vw, 5rem)",
+                      letterSpacing: "-0.04em",
+                    }}
+                    initial={{ y: 100, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                  >
+                    {"</ Hello World>"}
+                  </motion.h2>
+                </div>
+
+                {/* Ranja */}
+                <div className="overflow-hidden">
+                <motion.h1
+                  className="font-black leading-none inline-block text-transparent bg-clip-text"
+                  style={{
+                    fontSize: "clamp(3.5rem, 10vw, 9rem)",
+                    letterSpacing: "-0.04em",
+                    backgroundImage: `linear-gradient(135deg, ${palette.accent}, ${palette.accentSecondary}, white)`
+                  }}
+                >
+                  Ranja
+                </motion.h1>
+                </div>
+
+                {/* Andriamiadana */}
+                <div className="overflow-hidden mb-8">
+                <motion.h1
+                  className="font-black leading-none inline-block text-transparent bg-clip-text"
+                  style={{
+                    fontSize: "clamp(2.2rem, 7vw, 6rem)",
+                    letterSpacing: "-0.04em",
+                    backgroundImage: `linear-gradient(135deg, ${palette.accentSecondary}, rgba(255,255,255,0.85))`
+                  }}
+                >
+                  Andriamiadana.
+                </motion.h1>
+                </div>
+
+                {/* Description + CTA + Socials */}
+                <motion.div
+                  className="flex flex-col gap-6"
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.4 }}
+                >
+                  <p className="text-white/50 text-base sm:text-lg leading-relaxed max-wxl">
+                    Développeur
+                    <span className="text-white font-semibold"> Logiciel </span>
+                    Junior.
+                    Je conçois des solutions web et logicielles modernes, alliant performance technique et esthétique soignée.
+                  </p>
+
+                  <CTASocials accent={palette.accent} />
+                  
+                </motion.div>
+              </div>
+
+              {/* ── DROITE : Photo qui alterne (haut → bas) ── */}
+              <div className="relative shrink-0 flex items-end justify-center lg:justify-end">
+                <div
+                  className="relative overflow-hidden"
+                  style={{
+                    width: "clamp(220px, 28vw, 380px)",
+                    height: "clamp(300px, 40vw, 520px)",
+                  }}
+                >                
+                  <AnimatePresence mode="wait">
+                    <motion.img
+                      key={PHOTOS[photoIndex]}
+                      src={PHOTOS[photoIndex]}
+                      alt={`Photo ${photoIndex + 1}`}
+                      className="absolute inset-0 w-full h-full object-cover object-top"
+                      initial={{ y: "-100%", opacity: 0 }}
+                      animate={{ y: "0%", opacity: 1 }}
+                      exit={{ y: "100%", opacity: 0 }}
+                      transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+                    />
+                  </AnimatePresence>
+
+                  {/* Overlay gradient bas */}
+                  <div
+                    className="absolute bottom-0 left-0 right-0 h-1/3 z-10"
+                    style={{
+                      background: `linear-gradient(to top, ${palette.bg}cc, transparent)`,
+                    }}
+                  />
+                </div>
+
+                {/* Indicateur de photo */}
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-20">
+                  {PHOTOS.map((_, i) => (
+                    <div
+                      key={i}
+                      className="h-1 rounded-full transition-all duration-500"
+                      style={{
+                        width: i === photoIndex ? "20px" : "6px",
+                        backgroundColor: i === photoIndex
+                          ? palette.accent
+                          : "rgba(255,255,255,0.3)",
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Scroll indicator */}
+            <motion.div
+              className="flex flex-col items-center gap-2 self-center"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1.2 }}
             >
-              <Link 
-                href="/projects" 
-                className="px-8 py-4 rounded-xl font-semibold bg-white text-black hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 group"
-              >
-                Voir mes travaux
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </Link>
-              <Link 
-                href="/about" 
-                className="px-8 py-4 rounded-xl font-semibold glass-panel hover:bg-white/10 transition-colors flex items-center justify-center"
-              >
-                À propos de moi
-              </Link>
+              <span className="text-white/20 text-xs font-mono uppercase tracking-widest"></span>
+              <motion.div
+                className="w-px h-10 origin-top"
+                style={{ backgroundColor: palette.accent }}
+                animate={{ scaleY: [0, 1, 0] }}
+                transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+              />
             </motion.div>
           </div>
-        </div>
-      </section>
+        </section>
+      </div>
 
-      {/* Expertise Section */}
-      <section className="py-24 relative bg-background border-t border-white/5">
+      {/* ═══════════════════════════════════════
+          STATS
+      ═══════════════════════════════════════ */}
+      <section className="py-24 relative bg-background border-t border-white/5" id="hero">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <motion.div 
-              className="glass-card p-8 rounded-3xl"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-            >
-              <Terminal className="w-10 h-10 text-primary mb-6" />
-              <h3 className="text-2xl font-display font-bold mb-4">Frontend</h3>
-              <p className="text-muted-foreground leading-relaxed">
-                Création d'interfaces immersives avec ReactJS, Tailwind CSS, et des animations fluides pour une expérience utilisateur exceptionnelle.
-              </p>
-            </motion.div>
-            
-            <motion.div 
-              className="glass-card p-8 rounded-3xl"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.2 }}
-            >
-              <Database className="w-10 h-10 text-accent mb-6" />
-              <h3 className="text-2xl font-display font-bold mb-4">Backend & DB</h3>
-              <p className="text-muted-foreground leading-relaxed">
-                Conception d'APIs robustes avec Express.js, PHP, et modélisation de bases de données relationnelles (PostgreSQL, MySQL).
-              </p>
-            </motion.div>
 
-            <motion.div 
-              className="glass-card p-8 rounded-3xl"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.4 }}
-            >
-              <Code2 className="w-10 h-10 text-emerald-400 mb-6" />
-              <h3 className="text-2xl font-display font-bold mb-4">Logiciel Desktop</h3>
-              <p className="text-muted-foreground leading-relaxed">
-                Développement d'applications natives performantes en C, C++, C# et Java pour des besoins de gestion complexes.
-              </p>
-            </motion.div>
+            {[
+              {
+                value: "1ère",
+                label: "Place",
+                sub: "Hackathon DevFest 2025",
+                description: "Vainqueur du hackathon DevFest 2025 à Antananarivo.",
+                color: "#f97316",
+                icon: "🏆",
+              },
+              {
+                value: "3",
+                label: "Ans",
+                sub: "d'expérience",
+                description: "En développement web, logiciel et bases de données depuis 2022.",
+                color: "#ef4444",
+                icon: "⚡",
+              },
+              {
+                value: "10+",
+                label: "Projets",
+                sub: "réalisés",
+                description: "Des applications desktop aux plateformes web modernes.",
+                color: "#ffffff",
+                icon: "🌐",
+              },
+            ].map(({ value, label, sub, description, color, icon }, i) => (
+              <motion.div
+                key={label}
+                className="glass-card p-8 rounded-3xl relative overflow-hidden group"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.15 }}
+                whileHover={{ y: -4 }}
+              >
+                {/* Glow */}
+                <div
+                  className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-500 rounded-3xl"
+                  style={{ background: `radial-gradient(circle at 50% 50%, ${color}, transparent 70%)` }}
+                />
+
+                <div className="text-3xl mb-6">{icon}</div>
+
+                <div className="flex items-end gap-2 mb-1">
+                  <span
+                    className="font-black leading-none"
+                    style={{ fontSize: "clamp(3rem, 6vw, 4.5rem)", color }}
+                  >
+                    {value}
+                  </span>
+                  <span className="font-bold text-xl mb-2" style={{ color }}>
+                    {label}
+                  </span>
+                </div>
+
+                <p className="text-white/40 text-sm font-medium uppercase tracking-widest mb-4">
+                  {sub}
+                </p>
+
+                <div className="w-12 h-0.5 mb-4 rounded-full" style={{ backgroundColor: color, opacity: 0.4 }} />
+
+                <p className="text-muted-foreground text-sm leading-relaxed">{description}</p>
+              </motion.div>
+            ))}
+
           </div>
         </div>
       </section>
 
-      {/* Selected Projects */}
-      <section className="py-24 relative">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-end mb-16">
-            <div>
-              <h2 className="text-4xl md:text-5xl font-display font-bold mb-4">Projets <span className="text-primary">Sélectionnés</span></h2>
-              <p className="text-muted-foreground max-w-2xl text-lg">Quelques-unes de mes réalisations récentes, des hackathons aux applications de gestion.</p>
-            </div>
-            <Link href="/projects" className="hidden md:flex items-center gap-2 text-white hover:text-primary transition-colors font-medium">
-              Voir tout <ArrowRight className="w-5 h-5" />
-            </Link>
-          </div>
-
-          {isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {[1,2,3,4].map(i => <div key={i} className="h-80 rounded-2xl glass-card animate-pulse" />)}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {featuredProjects?.map((project, i) => (
-                <ProjectCard key={project.id} project={project} index={i} />
-              ))}
-            </div>
-          )}
-
-          <div className="mt-12 text-center md:hidden">
-            <Link href="/projects" className="inline-flex items-center gap-2 text-white bg-white/5 px-6 py-3 rounded-full border border-white/10">
-              Voir tous les projets <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
-        </div>
+      {/* ── À PROPOS ── */}
+      <section id="about">
+        <About />
       </section>
+
+      {/* ── PROJETS ── */}
+      <section id="projects" className="py-24">
+        <Projects />
+      </section>
+
     </div>
   );
 }

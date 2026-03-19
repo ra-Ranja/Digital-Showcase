@@ -1,6 +1,9 @@
 import { Router, type IRouter, Request, Response } from "express";
-import { db, profileTable } from "@workspace/db";
+import { db, profileTable, usersTable } from "@workspace/db";
+import { eq } from "drizzle-orm";
 import { requireAuth, AuthRequest } from "../middlewares/auth.js";
+import multer from "multer";
+const upload = multer({ storage: multer.memoryStorage() });
 
 const router: IRouter = Router();
 
@@ -69,6 +72,50 @@ router.put("/", requireAuth, async (req: AuthRequest, res: Response) => {
     res.json(profile);
   } catch {
     res.status(500).json({ error: "server_error", message: "Failed to update profile" });
+  }
+});
+
+// Upload CV
+router.post("/cv", requireAuth, upload.single("cv"), async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.file) {
+      res.status(400).json({ error: "bad_request", message: "No file provided" });
+      return;
+    }
+
+    const base64 = req.file.buffer.toString("base64"); // 👈 conversion base64
+
+    await db
+      .update(usersTable)
+      .set({ cvFile: base64, cvFilename: req.file.originalname })
+      .where(eq(usersTable.id, req.user!.userId));
+
+    res.json({ message: "CV uploaded successfully", filename: req.file.originalname });
+  } catch (err) {
+    res.status(500).json({ error: "server_error", message: "Failed to upload CV" });
+  }
+});
+
+// Download CV
+router.get("/cv", async (_req: Request, res: Response) => {
+  try {
+    const [user] = await db
+      .select({ cvFile: usersTable.cvFile, cvFilename: usersTable.cvFilename })
+      .from(usersTable)
+      .limit(1);
+
+    if (!user?.cvFile) {
+      res.status(404).json({ error: "not_found", message: "No CV available" });
+      return;
+    }
+
+    const buffer = Buffer.from(user.cvFile, "base64");
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `attachment; filename="${user.cvFilename ?? "CV.pdf"}"`);
+    res.send(buffer);
+  } catch (err) {
+    res.status(500).json({ error: "server_error", message: "Failed to download CV" });
   }
 });
 

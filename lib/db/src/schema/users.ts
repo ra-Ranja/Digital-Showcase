@@ -7,6 +7,8 @@ export const usersTable = pgTable("users", {
   username: text("username").notNull().unique(),
   passwordHash: text("password_hash").notNull(),
   email: text("email"),
+  cvFile: text("cv_file"),
+  cvFilename: text("cv_filename"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

@@ -1,4 +1,4 @@
-import { pgTable, serial, text, integer, boolean, timestamp, json } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, integer, boolean, timestamp, json, date } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -9,6 +9,7 @@ export const projectsTable = pgTable("projects", {
   longDescription: text("long_description"),
   category: text("category").notNull(),
   year: integer("year").notNull(),
+  projectDate: date("project_date"),
   technologies: json("technologies").$type<string[]>().notNull().default([]),
   githubUrl: text("github_url"),
   demoUrl: text("demo_url"),
@@ -16,6 +17,7 @@ export const projectsTable = pgTable("projects", {
   color: text("color").default("#00d4ff"),
   icon: text("icon"),
   coverImage: text("cover_image"),
+  coverImageBase64: text("cover_image_base64"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

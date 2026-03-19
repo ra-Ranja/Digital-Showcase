@@ -1,6 +1,6 @@
 import { Router, type IRouter, Request, Response } from "express";
 import { db, projectsTable, projectMediaTable } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 import { requireAuth, AuthRequest } from "../middlewares/auth.js";
 
 const router: IRouter = Router();
@@ -12,9 +12,13 @@ async function getProjectWithMedia(id: number) {
   return { ...project, media };
 }
 
-router.get("/", async (req: Request, res: Response) => {
+// GET tous les projets — du plus récent au plus ancien
+router.get("/", async (_req: Request, res: Response) => {
   try {
-    const projects = await db.select().from(projectsTable).orderBy(projectsTable.createdAt);
+    const projects = await db
+      .select()
+      .from(projectsTable)
+      .orderBy(desc(projectsTable.projectDate), desc(projectsTable.createdAt));
     const withMedia = await Promise.all(projects.map(p => getProjectWithMedia(p.id)));
     res.json(withMedia.filter(Boolean));
   } catch {
@@ -24,25 +28,23 @@ router.get("/", async (req: Request, res: Response) => {
 
 router.get("/:id", async (req: Request, res: Response) => {
   try {
-    const id = parseInt(req.params.id);
-    if (isNaN(id)) {
-      res.status(400).json({ error: "bad_request", message: "Invalid ID" });
-      return;
-    }
+    const id = parseInt(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id);
+    if (isNaN(id)) { res.status(400).json({ error: "bad_request" }); return; }
     const project = await getProjectWithMedia(id);
-    if (!project) {
-      res.status(404).json({ error: "not_found", message: "Project not found" });
-      return;
-    }
+    if (!project) { res.status(404).json({ error: "not_found" }); return; }
     res.json(project);
   } catch {
-    res.status(500).json({ error: "server_error", message: "Failed to fetch project" });
+    res.status(500).json({ error: "server_error" });
   }
 });
 
 router.post("/", requireAuth, async (req: AuthRequest, res: Response) => {
   try {
-    const { title, description, longDescription, category, year, technologies, githubUrl, demoUrl, featured, color, icon, coverImage } = req.body;
+    const {
+      title, description, longDescription, category, year, projectDate,
+      technologies, githubUrl, demoUrl, featured, color, icon,
+      coverImageBase64,
+    } = req.body;
 
     if (!title || !description || !category || !year) {
       res.status(400).json({ error: "bad_request", message: "Missing required fields" });
@@ -55,13 +57,15 @@ router.post("/", requireAuth, async (req: AuthRequest, res: Response) => {
       longDescription: longDescription || null,
       category,
       year: Number(year),
+      projectDate: projectDate || null,
       technologies: Array.isArray(technologies) ? technologies : [],
       githubUrl: githubUrl || null,
       demoUrl: demoUrl || null,
       featured: Boolean(featured),
       color: color || "#00d4ff",
       icon: icon || null,
-      coverImage: coverImage || null,
+      coverImage: null,
+      coverImageBase64: coverImageBase64 || null,
     }).returning();
 
     res.status(201).json({ ...project, media: [] });
@@ -72,81 +76,61 @@ router.post("/", requireAuth, async (req: AuthRequest, res: Response) => {
 
 router.put("/:id", requireAuth, async (req: AuthRequest, res: Response) => {
   try {
-    const id = parseInt(req.params.id);
-    if (isNaN(id)) {
-      res.status(400).json({ error: "bad_request", message: "Invalid ID" });
-      return;
-    }
+    const id = parseInt(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id);
+    if (isNaN(id)) { res.status(400).json({ error: "bad_request" }); return; }
 
-    const { title, description, longDescription, category, year, technologies, githubUrl, demoUrl, featured, color, icon, coverImage } = req.body;
+    const {
+      title, description, longDescription, category, year, projectDate,
+      technologies, githubUrl, demoUrl, featured, color, icon, coverImageBase64,
+    } = req.body;
 
     const [project] = await db.update(projectsTable).set({
-      title,
-      description,
+      title, description,
       longDescription: longDescription || null,
       category,
       year: Number(year),
+      projectDate: projectDate || null,
       technologies: Array.isArray(technologies) ? technologies : [],
       githubUrl: githubUrl || null,
       demoUrl: demoUrl || null,
       featured: Boolean(featured),
       color: color || "#00d4ff",
       icon: icon || null,
-      coverImage: coverImage || null,
+      coverImageBase64: coverImageBase64 || null,
     }).where(eq(projectsTable.id, id)).returning();
 
-    if (!project) {
-      res.status(404).json({ error: "not_found", message: "Project not found" });
-      return;
-    }
-
-    const updated = await getProjectWithMedia(id);
-    res.json(updated);
+    if (!project) { res.status(404).json({ error: "not_found" }); return; }
+    res.json(await getProjectWithMedia(id));
   } catch {
-    res.status(500).json({ error: "server_error", message: "Failed to update project" });
+    res.status(500).json({ error: "server_error" });
   }
 });
 
 router.delete("/:id", requireAuth, async (req: AuthRequest, res: Response) => {
   try {
-    const id = parseInt(req.params.id);
-    if (isNaN(id)) {
-      res.status(400).json({ error: "bad_request", message: "Invalid ID" });
-      return;
-    }
+    const id = parseInt(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id);
+    if (isNaN(id)) { res.status(400).json({ error: "bad_request" }); return; }
     await db.delete(projectsTable).where(eq(projectsTable.id, id));
-    res.json({ success: true, message: "Project deleted" });
+    res.json({ success: true });
   } catch {
-    res.status(500).json({ error: "server_error", message: "Failed to delete project" });
+    res.status(500).json({ error: "server_error" });
   }
 });
 
 router.post("/:id/media", requireAuth, async (req: AuthRequest, res: Response) => {
   try {
-    const id = parseInt(req.params.id);
-    if (isNaN(id)) {
-      res.status(400).json({ error: "bad_request", message: "Invalid ID" });
-      return;
-    }
-
+    const id = parseInt(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id);
+    if (isNaN(id)) { res.status(400).json({ error: "bad_request" }); return; }
     const { type, url, caption, order } = req.body;
-
-    if (!type || !url) {
-      res.status(400).json({ error: "bad_request", message: "type and url are required" });
-      return;
-    }
-
+    if (!type || !url) { res.status(400).json({ error: "bad_request" }); return; }
     const [media] = await db.insert(projectMediaTable).values({
-      projectId: id,
-      type,
-      url,
+      projectId: id, type, url,
       caption: caption || null,
       order: order ?? 0,
     }).returning();
-
     res.status(201).json(media);
   } catch {
-    res.status(500).json({ error: "server_error", message: "Failed to add media" });
+    res.status(500).json({ error: "server_error" });
   }
 });
 
