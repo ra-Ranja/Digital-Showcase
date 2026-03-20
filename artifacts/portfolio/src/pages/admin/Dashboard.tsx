@@ -332,17 +332,6 @@ function ProjectModal({
             </div>
             <div>
               <label className="text-sm text-muted-foreground flex items-center gap-2 mb-1">
-                <Video className="w-3.5 h-3.5" /> Lien vidéo démo (YouTube / Vimeo)
-              </label>
-              <input
-                value={form.videoUrl}
-                onChange={e => set("videoUrl", e.target.value)}
-                placeholder="https://youtube.com/watch?v=..."
-                className="w-full bg-background border border-border rounded-lg p-3 text-white focus:border-primary outline-none"
-              />
-            </div>
-            <div>
-              <label className="text-sm text-muted-foreground flex items-center gap-2 mb-1">
                 GitHub (optionnel)
               </label>
               <input
