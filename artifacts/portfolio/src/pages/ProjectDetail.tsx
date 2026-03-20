@@ -56,7 +56,8 @@ export default function ProjectDetail() {
 
   const palette = PALETTES[paletteIdx];
   const img = (project as any).coverImageBase64 || project.coverImage;
-  const videoMediaList = (project as any).media || [];
+  const demoUrl = (project as any).demoUrl || project.demoUrl;
+  const videoMediaList = demoUrl ? [{ url: demoUrl, caption: "Démo" }] : [];
 
   return (
     <div className="min-h-screen pt-24 pb-24 relative transition-colors duration-1000">
