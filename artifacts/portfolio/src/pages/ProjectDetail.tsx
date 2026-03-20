@@ -3,15 +3,26 @@ import { useParams, Link } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { useGetProject } from "@workspace/api-client-react";
 import { useProjectsList } from "@/hooks/use-portfolio-api";
-import { ArrowLeft, Github, ExternalLink, Calendar, Tag, Play } from "lucide-react";
+import { ArrowLeft, Calendar, Tag, Play } from "lucide-react";
 
-// ── Palettes ──────────────────────────────────────────────
 const PALETTES = [
   { accent: "#6366f1", accentSecondary: "#a855f7" },
   { accent: "#10b981", accentSecondary: "#06b6d4" },
   { accent: "#f97316", accentSecondary: "#ef4444" },
   { accent: "#e879f9", accentSecondary: "#818cf8" },
 ];
+
+function getVideoEmbed(url: string): string | null {
+  if (!url) return null;
+
+  const ytMatch = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+  if (ytMatch) return `https://www.youtube.com/embed/${ytMatch[1]}`;
+
+  const vimeoMatch = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+  if (vimeoMatch) return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
+
+  return url;
+}
 
 export default function ProjectDetail() {
   const params = useParams();
@@ -25,7 +36,6 @@ export default function ProjectDetail() {
 
   const [paletteIdx, setPaletteIdx] = useState(0);
 
-  // Cycle des palettes toutes les 3s
   useEffect(() => {
     const interval = setInterval(() => {
       setPaletteIdx(i => (i + 1) % PALETTES.length);
@@ -46,17 +56,11 @@ export default function ProjectDetail() {
 
   const palette = PALETTES[paletteIdx];
   const img = (project as any).coverImageBase64 || project.coverImage;
-  const videoMedia = (project as any).media?.find(
-    (m: any) => m.type === "youtube" || m.type === "video"
-  );
-  const ytId = videoMedia?.type === "youtube"
-    ? videoMedia.url.match(/(?:v=|youtu\.be\/)([^&?/]+)/)?.[1]
-    : null;
+  const videoMediaList = (project as any).media || [];
 
   return (
     <div className="min-h-screen pt-24 pb-24 relative transition-colors duration-1000">
 
-      {/* ── Glow animé ── */}
       <AnimatePresence mode="wait">
         <motion.div
           key={palette.accent}
@@ -69,7 +73,6 @@ export default function ProjectDetail() {
         />
       </AnimatePresence>
 
-      {/* ── Glow secondaire ── */}
       <AnimatePresence mode="wait">
         <motion.div
           key={palette.accentSecondary}
@@ -84,7 +87,6 @@ export default function ProjectDetail() {
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
 
-        {/* ── Back ── */}
         <Link
           href="/#projects"
           className="inline-flex items-center gap-2 text-muted-foreground hover:text-white transition-colors mb-12"
@@ -92,13 +94,9 @@ export default function ProjectDetail() {
           <ArrowLeft className="w-4 h-4" /> Retour aux projets
         </Link>
 
-        {/* ── Hero : texte gauche / image droite ── */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start mb-16">
 
-          {/* Gauche */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-
-            {/* Badges */}
             <div className="flex flex-wrap gap-3 mb-6">
               <motion.span
                 className="px-3 py-1 rounded-full text-xs font-medium border"
@@ -119,18 +117,15 @@ export default function ProjectDetail() {
               </span>
             </div>
 
-            {/* Titre */}
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-display font-bold mb-6 leading-tight">
               {project.title}
             </h1>
 
-            {/* Description */}
             <p className="text-xl text-muted-foreground leading-relaxed mb-8">
               {project.description}
             </p>
           </motion.div>
 
-          {/* Droite — Image */}
           <motion.div
             initial={{ opacity: 0, x: 30 }}
             animate={{ opacity: 1, x: 0 }}
@@ -139,19 +134,13 @@ export default function ProjectDetail() {
           >
             {img ? (
               <div className="relative rounded-2xl overflow-hidden aspect-video">
-                <img
-                  src={img}
-                  alt={project.title}
-                  className="w-full h-full object-cover"
-                />
-                {/* Bordure animée */}
+                <img src={img} alt={project.title} className="w-full h-full object-cover" />
                 <motion.div
                   className="absolute inset-0 rounded-2xl pointer-events-none"
                   animate={{ borderColor: `${palette.accent}40` }}
                   transition={{ duration: 1 }}
                   style={{ border: `1px solid ${palette.accent}40` }}
                 />
-                {/* Glow image */}
                 <motion.div
                   className="absolute inset-0 rounded-2xl pointer-events-none"
                   animate={{ boxShadow: `0 0 60px ${palette.accent}20` }}
@@ -172,17 +161,14 @@ export default function ProjectDetail() {
           </motion.div>
         </div>
 
-        {/* ── Séparateur ── */}
         <motion.div
           className="w-full h-px mb-16"
           animate={{ background: `linear-gradient(90deg, transparent, ${palette.accent}40, transparent)` }}
           transition={{ duration: 1 }}
         />
 
-        {/* ── Contenu bas ── */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
 
-          {/* Description longue */}
           <motion.div
             className="md:col-span-2 space-y-8"
             initial={{ opacity: 0, y: 20 }}
@@ -194,39 +180,46 @@ export default function ProjectDetail() {
               <p>{project.longDescription || project.description}</p>
             </div>
 
-            {/* Vidéo intégrée */}
-            {videoMedia && (
-              <div className="mt-8">
-                <h2 className="text-xl font-display font-bold mb-4 flex items-center gap-2">
-                  <Play className="w-5 h-5" style={{ color: palette.accent }} /> Démo vidéo
+            {videoMediaList.length > 0 && (
+              <div className="mt-8 space-y-6">
+                <h2 className="text-xl font-display font-bold flex items-center gap-2">
+                  <Play className="w-5 h-5" style={{ color: palette.accent }} />
+                  {videoMediaList.length > 1 ? "Vidéos" : "Vidéo"}
                 </h2>
-                <div
-                  className="rounded-2xl overflow-hidden aspect-video"
-                  style={{ border: `1px solid ${palette.accent}20` }}
-                >
-                  {ytId ? (
-                    <iframe
-                      src={`https://www.youtube.com/embed/${ytId}`}
-                      className="w-full h-full"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                    />
-                  ) : (
-                    <video src={videoMedia.url} controls className="w-full h-full" />
-                  )}
-                </div>
+
+                {videoMediaList.map((media: any, index: number) => {
+                  const embedUrl = getVideoEmbed(media.url);
+                  if (!embedUrl) return null;
+
+                  return (
+                    <div key={media.id || index}>
+                      {media.caption && (
+                        <p className="text-sm text-muted-foreground mb-2">{media.caption}</p>
+                      )}
+                      <div
+                        className="rounded-2xl overflow-hidden aspect-video"
+                        style={{ border: `1px solid ${palette.accent}20` }}
+                      >
+                        <iframe
+                          src={embedUrl}
+                          className="w-full h-full"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </motion.div>
 
-          {/* Sidebar */}
           <motion.div
             className="space-y-6"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.4 }}
           >
-            {/* Technologies */}
             <motion.div
               className="p-6 rounded-2xl glass-card"
               animate={{ borderColor: `${palette.accent}20` }}
@@ -256,8 +249,8 @@ export default function ProjectDetail() {
               </div>
             </motion.div>
 
-            {/* Contact */}
-            <div className="glass-card p-6 rounded-2xl"
+            <div
+              className="glass-card p-6 rounded-2xl"
               style={{ background: `linear-gradient(135deg, ${palette.accent}08, transparent)` }}
             >
               <h3 className="text-lg font-bold mb-2">Besoin d'un développeur ?</h3>
