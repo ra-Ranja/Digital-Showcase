@@ -6,7 +6,12 @@ import { useAuth } from "@/lib/auth-context";
 import { cn } from "@/lib/utils";
 
 const scrollTo = (id: string) => {
-  document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+  const el = document.getElementById(id);
+  if (el) {
+    el.scrollIntoView({ behavior: "smooth" });
+  } else {
+    window.location.href = `/#${id}`;
+  }
 };
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
@@ -15,24 +20,32 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("hero");
   const { isAuthenticated } = useAuth();
+  const isHomePage = location === "/";
 
   // Détecte la section visible
   useEffect(() => {
-    const sections = ["hero", "projects", "about"];
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) setActiveSection(entry.target.id);
-        });
-      },
-      { threshold: 0.3 }
-    );
-    sections.forEach((id) => {
-      const el = document.getElementById(id);
-      if (el) observer.observe(el);
-    });
-    return () => observer.disconnect();
-  }, []);
+    if (!isHomePage) return;
+  
+    const handleScroll = () => {
+      const sections = ["hero", "about", "projects"];
+      let current = "hero";
+  
+      for (const id of sections) {
+        const el = document.getElementById(id);
+        if (el) {
+          const rect = el.getBoundingClientRect();
+          if (rect.top <= window.innerHeight / 2) {
+            current = id;
+          }
+        }
+      }
+      setActiveSection(current);
+    };
+  
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [isHomePage]);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -130,7 +143,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               {!isSpecialPage && navLinks.map((link) => (
                 <button
                   key={link.id}
-                  onClick={() => { scrollTo(link.id); setMobileMenuOpen(false); }}
+                  onClick={() => { setMobileMenuOpen(false); setTimeout(() => scrollTo(link.id), 350); }}
                   className={cn(
                     "text-left py-2 border-b border-white/10",
                     activeSection === link.id ? "text-primary" : "text-white"
