@@ -1,5 +1,14 @@
 {
-    "buildCommand": "cd artifacts/portfolio && pnpm install && pnpm build",
-    "outputDirectory": "artifacts/portfolio/dist/public",
-    "installCommand": "echo 'skip'"
-  }
+  "buildCommand": "cd artifacts/portfolio && pnpm install && pnpm build",
+  "outputDirectory": "artifacts/portfolio/dist/public",
+  "installCommand": "pnpm install",
+  "devCommand": "pnpm --filter @workspace/portfolio run dev -- --port $PORT",
+  "functions": {
+    "api/**/*.ts": {
+      "maxDuration": 10
+    }
+  },
+  "rewrites": [
+    { "source": "/((?!api/|@|src/|.*\\.[a-zA-Z0-9]+$).*)", "destination": "/" }
+  ]
+}
