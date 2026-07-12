@@ -62,7 +62,7 @@ router.post("/", requireAuth, async (req: AuthRequest, res: Response) => {
 
 router.delete("/:id", requireAuth, async (req: AuthRequest, res: Response) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id);
     if (isNaN(id)) {
       res.status(400).json({ error: "bad_request", message: "Invalid ID" });
       return;
