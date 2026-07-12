@@ -39,9 +39,6 @@ catalogs:
     clsx:
       specifier: 2.1.1
       version: 2.1.1
-    drizzle-orm:
-      specifier: ^0.45.1
-      version: 0.45.1
     framer-motion:
       specifier: 12.35.1
       version: 12.35.1
@@ -72,6 +69,7 @@ catalogs:
 
 overrides:
   '@esbuild-kit/esm-loader': npm:tsx@^4.21.0
+  drizzle-orm: ^0.45.1
   '@expo/ngrok-bin>@expo/ngrok-bin-darwin-arm64': '-'
   '@expo/ngrok-bin>@expo/ngrok-bin-darwin-x64': '-'
   '@expo/ngrok-bin>@expo/ngrok-bin-freebsd-ia32': '-'
@@ -200,7 +198,7 @@ importers:
         specifier: ^2
         version: 2.8.6
       drizzle-orm:
-        specifier: 'catalog:'
+        specifier: ^0.45.1
         version: 0.45.1(@types/pg@8.18.0)(pg@8.20.0)
       express:
         specifier: ^5
@@ -643,7 +641,7 @@ importers:
   lib/db:
     dependencies:
       drizzle-orm:
-        specifier: 'catalog:'
+        specifier: ^0.45.1
         version: 0.45.1(@types/pg@8.18.0)(pg@8.20.0)
       drizzle-zod:
         specifier: ^0.8.3
@@ -2142,7 +2140,7 @@ packages:
   drizzle-zod@0.8.3:
     resolution: {integrity: sha512-66yVOuvGhKJnTdiqj1/Xaaz9/qzOdRJADpDa68enqS6g3t0kpNkwNYjUuaeXgZfO/UWuIM9HIhSlJ6C5ZraMww==}
     peerDependencies:
-      drizzle-orm: '>=0.36.0'
+      drizzle-orm: ^0.45.1
       zod: ^3.25.0 || ^4.0.0
 
   dunder-proto@1.0.1:
