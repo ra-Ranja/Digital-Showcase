@@ -1,6 +1,5 @@
 import { Router, type IRouter, Request, Response } from "express";
-import { db, profileTable, usersTable } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { db, profileTable, usersTable, eq } from "@workspace/db";
 import { requireAuth, AuthRequest } from "../middlewares/auth.js";
 import multer from "multer";
 const upload = multer({ storage: multer.memoryStorage() });
