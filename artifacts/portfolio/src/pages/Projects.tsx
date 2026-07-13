@@ -192,9 +192,9 @@ export default function Projects() {
                     <Search className="w-7 h-7" style={{ color: ACCENT }} />
                   </div>
                   <h3 className="text-xl font-display font-bold mb-2 text-white/80">
-                    Aucun projet trouvé
+                    Portfolio en cours de maintenance...
                   </h3>
-                  <p className="text-white/30 text-sm">Essayez une autre catégorie.</p>
+                  <p className="text-white/30 text-sm">Les projets s'afficheront plus tard.</p>
                 </motion.div>
               )}
             </motion.div>
