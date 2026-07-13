@@ -6,6 +6,8 @@ packages:
 
 autoInstallPeers: false
 
+node-linker: hoisted
+
 catalog:
   '@replit/vite-plugin-cartographer': ^0.5.0
   '@replit/vite-plugin-dev-banner': ^0.1.1
