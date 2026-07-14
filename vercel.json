@@ -1,5 +1,5 @@
 {
-  "buildCommand": "pnpm --filter @workspace/portfolio run build",
+  "buildCommand": "cd artifacts/portfolio && pnpm install && pnpm build",
   "outputDirectory": "artifacts/portfolio/dist/public",
   "installCommand": "pnpm install",
   "devCommand": "pnpm --filter @workspace/portfolio run dev -- --port $PORT",
