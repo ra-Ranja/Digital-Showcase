@@ -1,2 +1,2 @@
-export * from "./generated/api";
-export type * as ApiTypes from "./generated/types";
+export * from "./generated/api.js";
+export type * as ApiTypes from "./generated/types/index.js";
