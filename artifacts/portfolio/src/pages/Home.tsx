@@ -97,6 +97,7 @@ export default function Home() {
   const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
   const [showAllProjects, setShowAllProjects] = useState(false);
   const palette: Palette = PALETTES[paletteIndex];
+  const [selectedPhoto, setSelectedPhoto] = useState<number | null>(null);
 
   // Auto-changement de palette toutes les 3 secondes
   useEffect(() => {
@@ -281,6 +282,9 @@ export default function Home() {
                     <motion.div
                       key={photo.src}
                       className={`absolute ${config.widthClass} ${config.aspectClass} overflow-hidden rounded-[2.5rem] border-4 shadow-2xl group bg-neutral-900`}
+                      onClick={() =>
+                        setSelectedPhoto(selectedPhoto === index ? null : index)
+                      }
                       style={{
                         zIndex: config.zIndex,
                         borderColor,
@@ -288,10 +292,15 @@ export default function Home() {
                       initial={{ opacity: 0, scale: 0.5, y: 100, rotate: config.rotate }}
                       animate={{
                         opacity: 1,
-                        scale: 1,
+                        scale: selectedPhoto === index ? 1.05 : 1,
+                        rotate: selectedPhoto === index ? 0 : config.rotate,
                         x: config.x,
-                        y: [config.y, "calc(" + config.y + " - 15px)", config.y],
-                        rotate: config.rotate,
+                        y: [
+                          config.y,
+                          `calc(${config.y} - 15px)`,
+                          config.y,
+                        ],
+                        zIndex: selectedPhoto === index ? 40 : config.zIndex,
                       }}
                       transition={{
                         opacity: { duration: 0.8, delay: index * 0.2 },
@@ -307,6 +316,11 @@ export default function Home() {
                         rotate: 0,
                         zIndex: 40,
                         transition: { duration: 0.3 },
+                      }}
+                      whileTap={{
+                        scale: 1.05,
+                        rotate: 0,
+                        zIndex: 40,
                       }}
                     >
                       <img
@@ -459,7 +473,7 @@ export default function Home() {
 
       </section>
 
-      <section>
+      <section id="projects">
         <div className="">
           <Projects />
         </div>

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { BookOpen, Award, GraduationCap, Code2, Layout, Server, Database } from "lucide-react";
 
@@ -60,33 +60,81 @@ const TECH_CATEGORIES = [
 ];
 
 // Composant pour une bulle de compétence individuelle
-const SkillBadge = ({ skill, index }: { skill: any; index: number }) => {
+const SkillBadge = ({
+  skill,
+  index,
+  active,
+  onClick,
+  onMouseEnter,
+  onMouseLeave,
+}: {
+  skill: any;
+  index: number;
+  active: boolean;
+  onClick: () => void;
+  onMouseEnter: () => void;
+  onMouseLeave: () => void;
+}) => {
   return (
     <motion.div
+      onClick={onClick}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
       initial={{ opacity: 0, y: 15 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      transition={{ delay: index * 0.05, duration: 0.4 }}
-      whileHover={{ y: -5, scale: 1.05 }}
-      className="group relative flex flex-col items-center justify-center p-4 rounded-2xl bg-white/5 border border-white/10 hover:border-white/20 transition-all duration-300 backdrop-blur-sm cursor-pointer"
+      transition={{
+        delay: index * 0.05,
+        duration: 0.5,
+      }}
+      whileHover={{
+        y: -5,
+        scale: 1.05,
+      }}
+      whileTap={{
+        scale: 1.05,
+      }}
+      animate={{
+        y: active ? -5 : 0,
+        scale: active ? [1, 1.05, 1.02] : 1,
+      }}
+      className="group relative flex flex-col items-center justify-center p-4 rounded-2xl bg-white/5 hover:border-white/20 transition-all duration-300 backdrop-blur-sm cursor-pointer"
       style={{
-        boxShadow: "inset 0 0 20px rgba(255, 255, 255, 0.02)",
+        borderColor: active ? skill.color : "rgba(255,255,255,.1)",
+        boxShadow: active
+          ? `0 0 30px ${skill.color}40`
+          : "inset 0 0 20px rgba(255,255,255,.02)",
       }}
     >
       {/* Glow effect on hover */}
-      <div
-        className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-20 transition-opacity duration-300 blur-xl"
-        style={{ backgroundColor: skill.color }}
+      <motion.div
+        className="absolute inset-0 rounded-2xl blur-xl"
+        style={{
+          backgroundColor: skill.color,
+        }}
+        animate={{
+          opacity: active ? 0.22 : 0,
+        }}
+        transition={{
+          duration: 0.3,
+        }}
       />
       
       <div className="relative z-10 w-10 h-10 mb-3 flex items-center justify-center">
         <img
           src={skill.logo}
           alt={skill.name}
-          className="w-full h-full object-contain filter grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300"
+          className="w-full h-full object-contain transition-all duration-300"
+          style={{
+            filter: active ? "grayscale(0)" : "grayscale(1)",
+            opacity: active ? 1 : 0.7,
+          }}
         />
       </div>
-      <span className="text-xs font-medium text-white/60 group-hover:text-white transition-colors duration-300">
+      <span className="text-xs font-medium transition-colors duration-300"
+            style={{
+              color: active ? "#fff" : "rgba(255,255,255,.6)",
+            }}>
         {skill.name}
       </span>
     </motion.div>
@@ -94,6 +142,26 @@ const SkillBadge = ({ skill, index }: { skill: any; index: number }) => {
 };
 
 export default function About() {
+  const [activeSkill, setActiveSkill] = useState<string | null>(null);
+  const isTouch =
+  typeof window !== "undefined" &&
+  window.matchMedia("(hover: none)").matches;
+
+const allSkills = TECH_CATEGORIES.flatMap(category => category.skills);
+
+useEffect(() => {
+  if (!isTouch) return;
+
+  let i = 0;
+
+  const interval = setInterval(() => {
+    setActiveSkill(allSkills[i].name);
+    i = (i + 1) % allSkills.length;
+  }, 700);
+
+  return () => clearInterval(interval);
+}, []);
+
   return (
     <div className="min-h-screen text-white selection:bg-orange-500/30">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -133,7 +201,24 @@ export default function About() {
                   
                   <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
                     {category.skills.map((skill, index) => (
-                      <SkillBadge key={skill.name} skill={skill} index={index} />
+                      <SkillBadge
+                        key={skill.name}
+                        skill={skill}
+                        index={index}
+                        active={activeSkill === skill.name}
+                        onClick={() => {
+                          if (isTouch)
+                            setActiveSkill(
+                              activeSkill === skill.name ? null : skill.name
+                            );
+                        }}
+                        onMouseEnter={() => {
+                          if (!isTouch) setActiveSkill(skill.name);
+                        }}
+                        onMouseLeave={() => {
+                          if (!isTouch) setActiveSkill(null);
+                        }}
+                    />
                     ))}
                   </div>
                 </div>
