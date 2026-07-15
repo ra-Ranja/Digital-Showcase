@@ -147,20 +147,27 @@ export default function About() {
   typeof window !== "undefined" &&
   window.matchMedia("(hover: none)").matches;
 
-const allSkills = TECH_CATEGORIES.flatMap(category => category.skills);
+const [categoryIndex, setCategoryIndex] = useState(0);
+const [skillIndex, setSkillIndex] = useState(0);
 
 useEffect(() => {
   if (!isTouch) return;
 
-  let i = 0;
+  const category = TECH_CATEGORIES[categoryIndex];
 
-  const interval = setInterval(() => {
-    setActiveSkill(allSkills[i].name);
-    i = (i + 1) % allSkills.length;
-  }, 700);
+  setActiveSkill(category.skills[skillIndex].name);
 
-  return () => clearInterval(interval);
-}, []);
+  const timer = setTimeout(() => {
+    if (skillIndex < category.skills.length - 1) {
+      setSkillIndex((prev) => prev + 1);
+    } else {
+      setSkillIndex(0);
+      setCategoryIndex((prev) => (prev + 1) % TECH_CATEGORIES.length);
+    }
+  }, skillIndex === category.skills.length - 1 ? 900 : 450);
+
+  return () => clearTimeout(timer);
+}, [categoryIndex, skillIndex, isTouch]);
 
   return (
     <div className="min-h-screen text-white selection:bg-orange-500/30">

@@ -326,7 +326,13 @@ export default function Home() {
                       <img
                         src={photo.src}
                         alt={`Ran's Showcase ${index + 1}`}
-                        className="w-full h-full object-cover object-top filter grayscale contrast-125 group-hover:grayscale-0 transition-all duration-500"
+                        className="w-full h-full object-cover object-top transition-all duration-500"
+                        style={{
+                          filter:
+                            selectedPhoto === index
+                              ? "grayscale(0%) contrast(1)"
+                              : "grayscale(100%) contrast(1.25)",
+                        }}
                       />
                       <div className="absolute inset-0 bg-linear-to-t from-black/50 via-transparent to-transparent pointer-events-none" />
                     </motion.div>
