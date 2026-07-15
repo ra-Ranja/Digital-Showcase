@@ -10,6 +10,7 @@ const ACCENT2 = "#eab308"; // jaune
 export default function Projects() {
   const { data: projects, isLoading } = useProjectsList();
   const [filter, setFilter] = useState("Tous");
+  const [showAllProjects, setShowAllProjects] = useState(false);
 
   const safeProjects = Array.isArray(projects) ? projects : [];
 
@@ -27,6 +28,10 @@ export default function Projects() {
   const filteredProjects = safeProjects.filter((p: any) =>
     filter === "Tous" ? true : p?.category?.includes(filter)
   );
+
+  const displayedProjects = showAllProjects
+  ? filteredProjects
+  : filteredProjects.slice(0, 6);
 
   return (
     <div className="pt-32 pb-24 min-h-screen relative overflow-hidden">
@@ -114,7 +119,10 @@ export default function Projects() {
             return (
               <button
                 key={cat}
-                onClick={() => setFilter(cat)}
+                onClick={() => {
+                  setFilter(cat);
+                  setShowAllProjects(false);
+                }}
                 className="relative px-5 py-2 rounded-full text-sm font-medium transition-all duration-300"
                 style={{
                   backgroundColor: active ? ACCENT : "rgba(255,255,255,0.05)",
@@ -163,7 +171,7 @@ export default function Projects() {
         ) : (
           <AnimatePresence mode="popLayout">
             <motion.div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {filteredProjects.map((project: any, i: number) => (
+            {displayedProjects.map((project: any, i: number) => (
                 <motion.div
                   key={project?.id || i}
                   initial={{ opacity: 0, y: 20 }}
@@ -201,6 +209,41 @@ export default function Projects() {
           </AnimatePresence>
         )}
       </div>
+      {/* Bouton Afficher tout / Réduire */}
+      {filteredProjects.length > 6 && (
+        <div className="flex justify-center mt-8">
+          <button
+            type="button"
+            onClick={() => setShowAllProjects(!showAllProjects)}
+            className="px-8 py-3.5 rounded-xl font-mono text-xs font-bold uppercase tracking-wider border-2 transition-all duration-300 relative overflow-hidden group shadow-lg active:scale-95"
+            style={{
+              borderColor: ACCENT,
+              boxShadow: `0 4px 20px -10px ${ACCENT}`,
+            }}
+          >
+            <span
+              className={`relative z-10 transition-colors duration-300 ${
+                showAllProjects ? "text-black" : "group-hover:text-black"
+              }`}
+            >
+              {showAllProjects
+                ? "Réduire l'affichage"
+                : `Afficher tout (${filteredProjects.length})`}
+            </span>
+
+            <div
+              className={`absolute inset-0 z-0 transition-transform duration-300 ${
+                showAllProjects
+                  ? "translate-y-0"
+                  : "translate-y-full group-hover:translate-y-0"
+              }`}
+              style={{
+                backgroundColor: ACCENT,
+              }}
+            />
+          </button>
+        </div>
+      )}
     </div>
   );
 }

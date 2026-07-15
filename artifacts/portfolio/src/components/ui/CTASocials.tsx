@@ -1,4 +1,4 @@
-import { ArrowRight, Mail } from "lucide-react";
+import { ArrowRight, Download, Mail } from "lucide-react";
 
 interface CTASocialsProps {
   accent: string;
@@ -68,7 +68,7 @@ export function CTASocials({ accent }: CTASocialsProps) {
         style={{ backgroundColor: accent, color: "#000" }}
       >
         Télécharger mon CV
-        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+        <Download className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
       </a>
 
       {/* Séparateur */}
