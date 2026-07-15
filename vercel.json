@@ -1,5 +1,5 @@
 {
-  "buildCommand": "pnpm run typecheck && pnpm --filter @workspace/portfolio build && pnpm --filter @workspace/api-server build",
+  "buildCommand": "pnpm --filter @workspace/api-server build && pnpm run typecheck && pnpm --filter @workspace/portfolio build",
   "outputDirectory": "artifacts/portfolio/dist/public",
   "installCommand": "pnpm install",
   "devCommand": "pnpm --filter @workspace/portfolio run dev -- --port $PORT",
