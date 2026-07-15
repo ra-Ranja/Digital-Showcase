@@ -58,8 +58,8 @@ async function buildAll() {
     entryPoints: [path.resolve(__dirname, "src/app.ts")],
     platform: "node",
     bundle: true,
-    format: "esm",
-    outfile: path.resolve(distDir, "app.mjs"),
+    format: "cjs",
+    outfile: path.resolve(distDir, "app.cjs"),
     define: {
       "process.env.NODE_ENV": '"production"',
     },
@@ -69,7 +69,7 @@ async function buildAll() {
   });
 
   await writeFile(
-    path.resolve(distDir, "app.d.mts"),
+    path.resolve(distDir, "app.d.cts"),
     `import type { Express } from "express";\ndeclare const app: Express;\nexport default app;\n`,
   );
 }
