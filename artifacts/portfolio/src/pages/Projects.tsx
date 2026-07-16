@@ -86,7 +86,7 @@ export default function Projects() {
             📁
 
             {safeProjects.length > 0 ? (
-              <span>{safeProjects.length} projets</span>
+              <span className="text-[#e3dfdf]">{safeProjects.length} projets</span>
             ) : (
               <span className="flex items-center gap-1 text-[#c4ab78]">
                 Connexion instable, importation des projets en cours
@@ -95,7 +95,7 @@ export default function Projects() {
                   {[0, 1, 2].map((i) => (
                     <motion.span
                       key={i}
-                      className="mx-[1px]"
+                      className="mx-px"
                       animate={{
                         opacity: [0.2, 1, 0.2],
                       }}
