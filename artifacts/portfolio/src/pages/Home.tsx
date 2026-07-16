@@ -49,18 +49,13 @@ const PALETTES: Palette[] = [
   { bg: "#0f0a0f", accent: "#e879f9", accentSecondary: "#818cf8", word: "CREER" },
 ];
 
-// Photo1 = carrée (gauche, oblique haut-gauche)
-// Photo2 = rectangle horizontal (droite, oblique bas-droite)
-// Photo3 = rectangle vertical (centre, au premier plan, droite)
 const PHOTOS: PhotoDef[] = [
   { src: "/images/Photo1.jpg", shape: "square" },
   { src: "/images/Photo2.webp", shape: "landscape" },
   { src: "/images/Photo3.webp", shape: "portrait" },
 ];
 
-// Configuration géométrique par photo (index correspond à l'ordre dans PHOTOS)
 const PHOTO_CONFIGS: PhotoConfig[] = [
-  // Photo1 — carrée, en haut à gauche, oblique -40°
   {
     rotate: -40,
     x: "-52%",
@@ -70,7 +65,6 @@ const PHOTO_CONFIGS: PhotoConfig[] = [
     zIndex: 10,
     floatDelay: 0,
   },
-  // Photo2 — rectangle horizontal, en bas à droite, oblique +40°
   {
     rotate: -30,
     x: "48%",
@@ -80,7 +74,6 @@ const PHOTO_CONFIGS: PhotoConfig[] = [
     zIndex: 30,
     floatDelay: 0.4,
   },
-  // Photo3 — rectangle vertical, au centre, droite, premier plan
   {
     rotate: 0,
     x: "0%",
@@ -92,14 +85,199 @@ const PHOTO_CONFIGS: PhotoConfig[] = [
   },
 ];
 
+const PHOTO_COLOR_INTERVAL = 1500;
+
+// ── Composant de transition en gouttes de peinture animées ──
+function DrippingTransition({ color }: { color: string }) {
+  // Tracé SVG précis reproduisant l'effet bulbeux et organique
+  const dripPath =
+    "M 0,0 L 1000,0 L 1000,30 C 970,30 960,50 950,75 C 945,85 940,90 930,90 C 920,90 915,85 910,75 C 900,50 890,30 860,30 C 830,30 815,45 810,75 C 805,90 795,95 785,95 C 775,95 765,90 760,75 C 755,45 740,30 710,30 C 680,30 670,50 650,50 C 630,50 620,30 590,30 C 550,30 535,45 530,85 C 528,100 522,108 510,108 C 498,108 492,100 490,85 C 485,45 470,30 430,30 C 400,30 390,50 370,75 C 360,85 350,85 340,75 C 320,50 310,30 280,30 C 250,30 240,45 230,75 C 225,95 215,105 200,105 C 185,105 175,95 170,75 C 160,45 150,30 120,30 C 90,30 80,60 60,60 C 40,60 30,30 0,30 Z";
+
+  return (
+    <div className="absolute bottom-0 left-0 w-full overflow-hidden pointer-events-none z-20 h-16 sm:h-24 translate-y-[98%]">
+      {/* Conteneur doublé pour assurer un défilement infini et fluide sans coupure */}
+      <motion.div
+        className="flex w-[200%] h-full"
+        animate={{ x: ["-50%", "0%"] }}
+        transition={{
+          ease: "linear",
+          duration: 25, // Vitesse lente et organique
+          repeat: Infinity,
+        }}
+        style={{
+          filter: "drop-shadow(0px 12px 10px rgba(0, 0, 0, 0.75))",
+        }}
+      >
+        <svg
+          viewBox="0 0 1000 120"
+          preserveAspectRatio="none"
+          className="w-1/2 h-full scale-y-110"
+        >
+          <motion.path
+            d={dripPath}
+            animate={{ fill: color }}
+            transition={{ duration: 1.2, ease: "easeInOut" }}
+          />
+        </svg>
+        <svg
+          viewBox="0 0 1000 120"
+          preserveAspectRatio="none"
+          className="w-1/2 h-full scale-y-110"
+          aria-hidden="true"
+        >
+          <motion.path
+            d={dripPath}
+            animate={{ fill: color }}
+            transition={{ duration: 1.2, ease: "easeInOut" }}
+          />
+        </svg>
+      </motion.div>
+    </div>
+  );
+}
+
+function ZigZagTransition({ color }: { color: string }) {
+  const path = `
+    M0,0
+    L1000,0
+    L1000,8
+    L990,12
+    L980,8
+    L970,12
+    L960,8
+    L950,12
+    L940,8
+    L930,12
+    L920,8
+    L910,12
+    L900,8
+    L890,12
+    L880,8
+    L870,12
+    L860,8
+    L850,12
+    L840,8
+    L830,12
+    L820,8
+    L810,12
+    L800,8
+    L790,12
+    L780,8
+    L770,12
+    L760,8
+    L750,12
+    L740,8
+    L730,12
+    L720,8
+    L710,12
+    L700,8
+    L690,12
+    L680,8
+    L670,12
+    L660,8
+    L650,12
+    L640,8
+    L630,12
+    L620,8
+    L610,12
+    L600,8
+    L590,12
+    L580,8
+    L570,12
+    L560,8
+    L550,12
+    L540,8
+    L530,12
+    L520,8
+    L510,12
+    L500,8
+    L490,12
+    L480,8
+    L470,12
+    L460,8
+    L450,12
+    L440,8
+    L430,12
+    L420,8
+    L410,12
+    L400,8
+    L390,12
+    L380,8
+    L370,12
+    L360,8
+    L350,12
+    L340,8
+    L330,12
+    L320,8
+    L310,12
+    L300,8
+    L290,12
+    L280,8
+    L270,12
+    L260,8
+    L250,12
+    L240,8
+    L230,12
+    L220,8
+    L210,12
+    L200,8
+    L190,12
+    L180,8
+    L170,12
+    L160,8
+    L150,12
+    L140,8
+    L130,12
+    L120,8
+    L110,12
+    L100,8
+    L90,12
+    L80,8
+    L70,12
+    L60,8
+    L50,12
+    L40,8
+    L30,12
+    L20,8
+    L10,12
+    L0,8
+    Z
+  `;
+
+  return (
+    <div className="absolute bottom-0 left-0 w-full h-3 overflow-hidden pointer-events-none translate-y-full z-30">
+      <motion.div
+        className="flex w-[200%] h-full"
+        animate={{ x: ["0%", "-50%"] }}
+        transition={{
+          duration: 18,
+          ease: "linear",
+          repeat: Infinity,
+        }}
+      >
+        {[0, 1].map((i) => (
+          <svg
+            key={i}
+            viewBox="0 0 1000 12"
+            preserveAspectRatio="none"
+            className="w-1/2 h-full"
+          >
+            <path d={path} fill={color} />
+          </svg>
+        ))}
+      </motion.div>
+    </div>
+  );
+}
+
 export default function Home() {
   const [paletteIndex, setPaletteIndex] = useState(0);
   const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
   const [showAllProjects, setShowAllProjects] = useState(false);
   const palette: Palette = PALETTES[paletteIndex];
   const [selectedPhoto, setSelectedPhoto] = useState<number | null>(null);
+  const [colorPhotoIndex, setColorPhotoIndex] = useState(0);
 
-  // Auto-changement de palette toutes les 3 secondes
   useEffect(() => {
     const interval = setInterval(() => {
       setPaletteIndex((prev) => (prev + 1) % PALETTES.length);
@@ -107,7 +285,35 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
 
-  // Suivi de souris pour l'aurora
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setColorPhotoIndex((prev) => (prev + 1) % PHOTOS.length);
+    }, PHOTO_COLOR_INTERVAL);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (document.getElementById("gf-allura")) return;
+
+    const preconnect1 = document.createElement("link");
+    preconnect1.rel = "preconnect";
+    preconnect1.href = "https://fonts.googleapis.com";
+
+    const preconnect2 = document.createElement("link");
+    preconnect2.rel = "preconnect";
+    preconnect2.href = "https://fonts.gstatic.com";
+    preconnect2.crossOrigin = "anonymous";
+
+    const stylesheet = document.createElement("link");
+    stylesheet.id = "gf-allura";
+    stylesheet.rel = "stylesheet";
+    stylesheet.href = "https://fonts.googleapis.com/css2?family=Allura&display=swap";
+
+    document.head.appendChild(preconnect1);
+    document.head.appendChild(preconnect2);
+    document.head.appendChild(stylesheet);
+  }, []);
+
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       setMousePos({
@@ -119,11 +325,8 @@ export default function Home() {
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
-  // Gestion des projets
   const { data: projects, isLoading } = useProjectsList();
   const projectsArray: Project[] = Array.isArray(projects) ? (projects as unknown as Project[]) : [];
-
-  // Filtrage : afficher soit 6 projets soit la totalité
   const displayedProjects = showAllProjects ? projectsArray : projectsArray.slice(0, 6);
 
   return (
@@ -216,7 +419,7 @@ export default function Home() {
                 <div className="overflow-hidden mb-1">
                   <motion.h2
                     className="font-black opacity-80"
-                    style={{ fontSize: "clamp(1.5rem, 4vw, 3rem)", color: palette.accent }}
+                    style={{ fontSize: "clamp(1.5rem, 2vw, 2rem)", color: palette.accent }}
                     initial={{ y: 50, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ duration: 0.8 }}
@@ -227,10 +430,12 @@ export default function Home() {
 
                 <div className="overflow-hidden">
                   <motion.h1
-                    className="font-black leading-none inline-block text-transparent bg-clip-text bg-linear-to-r"
+                    className="leading-none inline-block text-transparent bg-clip-text bg-linear-to-r"
                     style={{
-                      fontSize: "clamp(3.5rem, 9vw, 8rem)",
-                      letterSpacing: "-0.04em",
+                      fontFamily: "'Allura', cursive",
+                      fontWeight: 400,
+                      fontSize: "clamp(4.5rem, 11vw, 10rem)",
+                      letterSpacing: "0",
                       backgroundImage: `linear-gradient(135deg, ${palette.accent}, ${palette.accentSecondary}, white)`
                     }}
                     initial={{ y: 80, opacity: 0 }}
@@ -243,10 +448,12 @@ export default function Home() {
 
                 <div className="overflow-hidden mb-6">
                   <motion.h1
-                    className="font-black leading-none inline-block text-transparent bg-clip-text"
+                    className="leading-none inline-block text-transparent bg-clip-text"
                     style={{
-                      fontSize: "clamp(2rem, 6.5vw, 5.5rem)",
-                      letterSpacing: "-0.04em",
+                      fontFamily: "'Allura', cursive",
+                      fontWeight: 400,
+                      fontSize: "clamp(2.5rem, 8vw, 6.5rem)",
+                      letterSpacing: "0",
                       backgroundImage: `linear-gradient(135deg, ${palette.accentSecondary}, rgba(255,255,255,0.9))`
                     }}
                     initial={{ y: 80, opacity: 0 }}
@@ -271,12 +478,13 @@ export default function Home() {
                 </motion.div>
               </div>
 
-              {/* MODIFICATION 1 : 3 Photos superposées, cadrages différenciés + obliques */}
+              {/* 3 Photos superposées */}
               <div className="relative flex items-center justify-center w-full lg:w-1/2 h-112.5">
                 {PHOTOS.map((photo, index) => {
                   const config = PHOTO_CONFIGS[index];
                   const borderColor =
                     index === 0 ? palette.accent : index === 1 ? palette.accentSecondary : "#ffffff";
+                  const isColor = selectedPhoto === index || colorPhotoIndex === index;
 
                   return (
                     <motion.div
@@ -326,12 +534,11 @@ export default function Home() {
                       <img
                         src={photo.src}
                         alt={`Ran's Showcase ${index + 1}`}
-                        className="w-full h-full object-cover object-top transition-all duration-500"
+                        className="w-full h-full object-cover object-top transition-[filter] duration-700 ease-in-out"
                         style={{
-                          filter:
-                            selectedPhoto === index
-                              ? "grayscale(0%) contrast(1)"
-                              : "grayscale(100%) contrast(1.25)",
+                          filter: isColor
+                            ? "grayscale(0%) contrast(1)"
+                            : "grayscale(100%) contrast(1.25)",
                         }}
                       />
                       <div className="absolute inset-0 bg-linear-to-t from-black/50 via-transparent to-transparent pointer-events-none" />
@@ -353,12 +560,15 @@ export default function Home() {
             </div>
           </div>
         </section>
+
+        {/* ── Transition goutte de peinture dynamique placée en bas du Hero ── */}
+        <DrippingTransition color={palette.bg} />
       </div>
 
       {/* ═══════════════════════════════════════
-          STATS SECTION
+          STATS SECTION (Bordure droite supprimée pour un fondu parfait)
       ═══════════════════════════════════════ */}
-      <section className="py-24 relative bg-black/40 border-t border-white/5">
+      <section className="py-36 relative bg-black/40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
@@ -391,15 +601,15 @@ export default function Home() {
             ))}
           </div>
         </div>
+        <ZigZagTransition color="#050505" />
       </section>
 
       {/* ═══════════════════════════════════════
-          MODIFICATION 2 : À PROPOS (Stylisé avec animations)
+          À PROPOS
       ═══════════════════════════════════════ */}
       <section id="about" className="py-32 relative max-w-5xl mx-auto px-6 sm:px-8">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
           <div className="md:col-span-4">
-            
             <motion.div className="col-span-1" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
               <div className="rounded-[10rem] overflow-hidden glass-card mb-4 p-1">
                 <img
@@ -451,7 +661,7 @@ export default function Home() {
                 I
               </span>
               <p className="text-lg sm:text-xl text-neutral-300 font-medium leading-relaxed group-hover:text-white transition-colors duration-300">
-              Un bon logiciel ne se limite pas à fonctionner : il doit être intuitif, performant et agréable à utiliser. C'est cette<span className="text-[#b1b474] font-semibold"> recherche de qualité</span> qui me pousse à explorer les subtilités du développement.
+                Un bon logiciel ne se limite pas à fonctionner : il doit être intuitif, performant et agréable à utiliser. C'est cette<span className="text-[#b1b474] font-semibold"> recherche de qualité</span> qui me pousse à explorer les subtilités du développement.
               </p>
             </motion.div>
 
@@ -467,7 +677,7 @@ export default function Home() {
                 II
               </span>
               <p className="text-lg sm:text-xl text-neutral-300 font-medium leading-relaxed group-hover:text-white transition-colors duration-300">
-              Je considère chaque projet comme une occasion de concevoir une solution dont je peux être fier.
+                Je considère chaque projet comme une occasion de concevoir une solution dont je peux être fier.
               </p>
             </motion.div>
           </div>

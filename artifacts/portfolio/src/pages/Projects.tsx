@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useProjectsList } from "@/hooks/use-portfolio-api";
 import { ProjectCard } from "@/components/ui/ProjectCard";
-import { Search, Layers } from "lucide-react";
+import { Search, Layers, Download } from "lucide-react";
 
 const ACCENT  = "#10b981"; // vert émeraude
 const ACCENT2 = "#eab308"; // jaune
@@ -83,8 +83,34 @@ export default function Projects() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.1 }}
           >
-            <Layers className="w-3.5 h-3.5" />
-            {safeProjects.length} projets
+            📁
+
+            {safeProjects.length > 0 ? (
+              <span>{safeProjects.length} projets</span>
+            ) : (
+              <span className="flex items-center gap-1 text-[#c4ab78]">
+                Connexion instable, importation des projets en cours
+
+                <span className="flex">
+                  {[0, 1, 2].map((i) => (
+                    <motion.span
+                      key={i}
+                      className="mx-[1px]"
+                      animate={{
+                        opacity: [0.2, 1, 0.2],
+                      }}
+                      transition={{
+                        duration: 1,
+                        repeat: Infinity,
+                        delay: i * 0.2,
+                      }}
+                    >
+                      •
+                    </motion.span>
+                  ))}
+                </span>
+              </span>
+            )}
           </motion.div>
 
           <h1

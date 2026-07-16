@@ -100,11 +100,14 @@ const SkillBadge = ({
       }}
       className="group relative flex flex-col items-center justify-center p-4 rounded-2xl bg-white/5 hover:border-white/20 transition-all duration-300 backdrop-blur-sm cursor-pointer"
       style={{
-        borderColor: active ? skill.color : "rgba(255,255,255,.1)",
-        boxShadow: active
-          ? `0 0 30px ${skill.color}40`
-          : "inset 0 0 20px rgba(255,255,255,.02)",
-      }}
+      backgroundColor: `${skill.color}15`,   // ≈13% d'opacité
+      borderColor: active
+        ? skill.color
+        : `${skill.color}33`,
+      boxShadow: active
+        ? `0 0 30px ${skill.color}40`
+        : `inset 0 0 20px ${skill.color}10`,
+    }}
     >
       {/* Glow effect on hover */}
       <motion.div
@@ -126,14 +129,14 @@ const SkillBadge = ({
           alt={skill.name}
           className="w-full h-full object-contain transition-all duration-300"
           style={{
-            filter: active ? "grayscale(0)" : "grayscale(1)",
-            opacity: active ? 1 : 0.7,
+            filter: active ? "grayscale(0)" : "grayscale(.25)",
+            opacity: active ? 1 : .9,
           }}
         />
       </div>
       <span className="text-xs font-medium transition-colors duration-300"
             style={{
-              color: active ? "#fff" : "rgba(255,255,255,.6)",
+              color: active ? "#fff" : "rgba(255,255,255,.7)",
             }}>
         {skill.name}
       </span>
